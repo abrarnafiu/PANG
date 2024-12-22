@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import { Link } from "react-router-dom";
 import NavigationBar from '../components/Navbar';
 
 interface StockEntry {
@@ -112,6 +113,9 @@ const GetStartedPage: React.FC = () => {
             ) : (
               <p>No recent history available.</p>
             )}
+            <Link to={`/analysis?ticker=${ticker}&period=${period}`}>
+              <StyledButton type="button">View Analysis</StyledButton>
+            </Link>
           </div>
         )}
       </Content>

@@ -11,10 +11,11 @@ const NavigationBar: React.FC = () => {
       <NavLinks>
         <Link to="/solutions">Solutions</Link>
         <Link to="/about">About</Link>
+        <Link to ="/get-started">Get Started</Link>
       </NavLinks>
       <Actions>
-        <Link to ="/get-started"> 
-        <button>Get Started</button>
+        <Link to ="/login"> 
+        <button>Login</button>
         </Link>
       </Actions>
     </Nav>

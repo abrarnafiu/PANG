@@ -22,22 +22,27 @@ const About = () => {
         <TeamGrid>
           <TeamCard>
             <img src="/path/to/your-image.jpg" alt="Your Name" />
-            <h3>Your Name</h3>
-            <p>Your role or short description about yourself.</p>
+            <h3>Abrar</h3>
+            <p>Developer</p>
           </TeamCard>
 
           <TeamCard>
             <img src="/path/to/friend1-image.jpg" alt="Friend 1" />
-            <h3>Friend 1</h3>
-            <p>Friend 1's role or short description about them.</p>
+            <h3>Rayn</h3>
+            <p>Developer</p>
           </TeamCard>
 
           <TeamCard>
             <img src="/path/to/friend2-image.jpg" alt="Friend 2" />
-            <h3>Friend 2</h3>
-            <p>Friend 2's role or short description about them.</p>
+            <h3>Jeffrey</h3>
+            <p>Developer</p>
           </TeamCard>
 
+          <TeamCard>
+            <img src="/path/to/friend2-image.jpg" alt="Friend 2" />
+            <h3>Pramshu</h3>
+            <p>Developer</p>
+          </TeamCard>
           {/* Add more TeamCards as needed */}
         </TeamGrid>
       </TeamSection>
