@@ -22,7 +22,7 @@ const Analysis: React.FC = () => {
     const fetchAnalysis = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5000/api/get_analysis?ticker=${ticker}&period=${period}`
+          `http://localhost:3001/api/get_analysis?ticker=${ticker}&period=${period}`
         );
         if (!response.ok) {
           throw new Error(`Error: ${response.statusText}`);

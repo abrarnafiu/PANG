@@ -38,7 +38,7 @@ const GetStartedPage: React.FC = () => {
     setStockData(null); // Reset stock data before fetching new data
 
     try {
-      const response = await fetch(`http://localhost:5000/api/get_data?ticker=${ticker}&period=${period}`, {
+      const response = await fetch(`http://localhost:3001/api/get_data?ticker=${ticker}&period=${period}`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

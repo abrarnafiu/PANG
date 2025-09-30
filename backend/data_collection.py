@@ -8,9 +8,8 @@ import yfinance as yf
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, LSTM, Dropout
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+# from tensorflow.keras.models import Sequential
+# from tensorflow.keras.layers import Dense, LSTM, Dropout
 
 
 app = Flask(__name__)
@@ -21,7 +20,22 @@ app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'  # JWT secret key
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 jwt = JWTManager(app)
-CORS(app)
+
+# Configure CORS to allow requests from your React frontend
+CORS(app, 
+     origins=['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'],
+     allow_headers=['Content-Type', 'Authorization', 'X-Requested-With'],
+     methods=['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+     supports_credentials=True)
+
+# Manual CORS handler as backup
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', 'http://localhost:5173')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 def is_valid_period(input_period):
     '''Check if the input time period is valid.'''
@@ -126,63 +140,46 @@ def get_analysis():
     period = request.args.get('period')
     stock = yf.Ticker(ticker)
     history = stock.history(period=period)
-    target_y = history['Close']
-    x_feat = history.iloc[:, 0:3]  # Use Open, High, Low as features
-
-    sc = StandardScaler()
-    x_ft = sc.fit_transform(x_feat.values)
-    x_ft = pd.DataFrame(columns=x_feat.columns, data=x_ft, index=x_feat.index)
-
-    combined_data = pd.concat([x_ft, target_y], axis=1).dropna()
-    n_steps = 2
-
-    def lstm_split(data, n_steps):
-        x, y = [], []
-        for i in range(len(data) - n_steps + 1):
-            x.append(data[i:i + n_steps, :-1])
-            y.append(data[i + n_steps - 1, -1])
-        return np.array(x), np.array(y)
-
-    x1, y1 = lstm_split(combined_data.values, n_steps=n_steps)
-
-    train_split = 0.8
-    split_idx = int(np.ceil(len(x1) * train_split))
-    data_index = combined_data.index
-
-    x_train, x_test = x1[:split_idx], x1[split_idx:]
-    y_train, y_test = y1[:split_idx], y1[split_idx:]
-    x_test_date = data_index[split_idx:]
-
-    # Scale target variable
-    y_scaler = MinMaxScaler()
-    y_train = y_scaler.fit_transform(y_train.reshape(-1, 1))
-    y_test = y_scaler.transform(y_test.reshape(-1, 1))
-
-    # Build and train LSTM model
-    lstm = Sequential()
-    lstm.add(LSTM(32, input_shape=(x_train.shape[1], x_train.shape[2]), activation='relu'))
-    lstm.add(Dense(1))
-    lstm.compile(loss='mean_squared_error', optimizer='adam')
-
-    lstm.fit(x_train, y_train, epochs=50, batch_size=4, verbose=0, shuffle=False)
-
-    # Predict on test data
-    y_pred = lstm.predict(x_test)
-    y_pred = y_scaler.inverse_transform(y_pred)
-    y_test = y_scaler.inverse_transform(y_test)
-
-    # Ensure `x_test_date` matches `y_test`
-    x_test_date = x_test_date[:len(y_test)]
-
+    
+    if history.empty:
+        return jsonify({'error': 'No data found for the given ticker and period.'}), 404
+    
+    # Calculate simple moving averages and basic statistics
+    history['SMA_5'] = history['Close'].rolling(window=5).mean()
+    history['SMA_20'] = history['Close'].rolling(window=20).mean()
+    
+    # Calculate price changes
+    history['Price_Change'] = history['Close'].pct_change()
+    history['Price_Change_5d'] = history['Close'].pct_change(periods=5)
+    
+    # Simple prediction using linear trend
+    x = np.arange(len(history))
+    y = history['Close'].values
+    coeffs = np.polyfit(x, y, 1)
+    
+    # Predict next 5 days
+    future_x = np.arange(len(history), len(history) + 5)
+    predicted_values = np.polyval(coeffs, future_x)
+    
+    # Get recent data for comparison
+    recent_dates = history.index[-10:].strftime('%Y-%m-%d').tolist()
+    recent_prices = history['Close'][-10:].tolist()
+    
     # Prepare response
     analysis_data = {
         'Ticker': ticker,
-        'Dates': x_test_date.strftime('%Y-%m-%d').tolist(),
-        'True Values': y_test.flatten().tolist(),
-        'Predicted Values': y_pred.flatten().tolist()
+        'Recent_Dates': recent_dates,
+        'Recent_Prices': recent_prices,
+        'Predicted_Dates': [d.strftime('%Y-%m-%d') for d in pd.date_range(history.index[-1] + pd.Timedelta(days=1), periods=5, freq='D')],
+        'Predicted_Values': predicted_values.tolist(),
+        'Current_Price': float(history['Close'].iloc[-1]),
+        'SMA_5': float(history['SMA_5'].iloc[-1]) if not pd.isna(history['SMA_5'].iloc[-1]) else None,
+        'SMA_20': float(history['SMA_20'].iloc[-1]) if not pd.isna(history['SMA_20'].iloc[-1]) else None,
+        'Price_Change_1d': float(history['Price_Change'].iloc[-1]) if not pd.isna(history['Price_Change'].iloc[-1]) else None,
+        'Price_Change_5d': float(history['Price_Change_5d'].iloc[-1]) if not pd.isna(history['Price_Change_5d'].iloc[-1]) else None
     }
-
+    
     return jsonify(analysis_data)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=3001)
