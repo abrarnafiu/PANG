@@ -13,7 +13,7 @@ const Protected: React.FC = () => {
                     },
                 });
                 setMessage(response.data.message);
-            } catch (error) {
+            } catch {
                 alert("Unauthorized");
             }
         };

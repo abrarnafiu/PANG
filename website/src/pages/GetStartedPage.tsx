@@ -23,7 +23,7 @@ interface StockData {
   "52 Week High": number | string; // Include this stat
   "52 Week Low": number | string; // Include this stat
   RecentHistory?: StockEntry[]; // Optional property
-  [key: string]: any; // Allow other dynamic keys
+  [key: string]: string | number | StockEntry[] | undefined;
 }
 
 const GetStartedPage: React.FC = () => {

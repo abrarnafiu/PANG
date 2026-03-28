@@ -9,9 +9,9 @@ const ForgotPassword: React.FC = () => {
 
     const handleForgotPassword = async () => {
         try {
-            const response = await api.post('/forgot', { email });
+            await api.post('/forgot', { email });
             setMessage('A security code has been sent to your email.');
-        } catch (error) {
+        } catch {
             setMessage('Error sending security code. Please try again.');
         }
     };
