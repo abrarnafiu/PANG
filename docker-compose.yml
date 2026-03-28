@@ -1,0 +1,22 @@
+services:
+  backend:
+    build: ./backend
+    restart: unless-stopped
+    environment:
+      SUPABASE_JWT_SECRET: ${SUPABASE_JWT_SECRET}
+      SUPABASE_URL: ${SUPABASE_URL:-https://wvsnrdajylbdqfdpwews.supabase.co}
+    # Port exposed only for direct debugging; frontend talks to it via nginx proxy
+    ports:
+      - "5000:5000"
+
+  frontend:
+    build:
+      context: ./website
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL}
+        VITE_SUPABASE_ANON_KEY: ${VITE_SUPABASE_ANON_KEY}
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - backend

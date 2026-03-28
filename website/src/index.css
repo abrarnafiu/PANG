@@ -1,17 +1,19 @@
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  color: #ffffff;
+  background-color: #0a0e1a;
 }
 
 body {
-  margin-top: 50px;
-  display: flex;
-  flex-direction: column;
+  margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background-color: #242424;
-  color: rgba(255, 255, 255, 0.87);
+  background-color: #0a0e1a;
+  color: #ffffff;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 h1, p {
@@ -19,22 +21,6 @@ h1, p {
   padding: 0;
 }
 
-a {
-  color: #fff;
-  text-decoration: none;
-}
-
 button {
-  border-radius: 8px;
-  border: none;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
   font-family: inherit;
-  cursor: pointer;
-  background-color: #1a1a1a;
-}
-
-button:hover {
-  background-color: #333;
 }

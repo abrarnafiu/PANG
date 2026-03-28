@@ -1,137 +1,165 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import api from '../services/api';
-import NavigationBar from '../components/Navbar';
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import styled from "styled-components";
+import { useAuth } from "../contexts/AuthContext";
+import { theme } from "../theme";
 
-const Register: React.FC = () => {
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState('');
+const RegisterPage: React.FC = () => {
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { register } = useAuth();
+  const navigate = useNavigate();
 
-    const handleRegister = async () => {
-        try {
-            const response = await api.post('/register', { username, password });
-            alert(response.data.message);
-            window.location.href = '/login'; // Redirect to login page
-        } catch (error) {
-            alert("Error during registration");
-        }
-    };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    try {
+      await register(email, password, username || undefined);
+      navigate("/dashboard");
+    } catch (err: unknown) {
+      const msg = (err as { message?: string })?.message || "Registration failed.";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    return (
-        <Page>
-            <NavigationBar />
-            <Container>
-                <RegisterCard>
-                    <h1>Create an Account</h1>
-                    <p>Join us today and start your journey!</p>
-                    <Input
-                        type="text"
-                        placeholder="Username"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                    />
-                    <Input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <Button onClick={handleRegister}>Register</Button>
-                    <Divider />
-                    <SecondaryText>
-                        Already have an account? <a href="/login">Login</a>
-                    </SecondaryText>
-                </RegisterCard>
-            </Container>
-        </Page>
-    );
+  return (
+    <Page>
+      <Card>
+        <Title>Create an account</Title>
+        <Subtitle>Join and start tracking stocks</Subtitle>
+        <Form onSubmit={handleSubmit}>
+          <Input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            required
+            autoComplete="username"
+          />
+          <Input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
+          <Input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={6}
+            autoComplete="new-password"
+          />
+          {error && <ErrorMsg>{error}</ErrorMsg>}
+          <Button type="submit" disabled={loading}>
+            {loading ? "Creating account…" : "Register"}
+          </Button>
+        </Form>
+        <Footer>
+          Already have an account? <Link to="/login">Sign in</Link>
+        </Footer>
+      </Card>
+    </Page>
+  );
 };
 
-// Styled Components
 const Page = styled.div`
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    background: #f9f9f9;
+  min-height: 100vh;
+  background: ${theme.bg};
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
 `;
 
-const Container = styled.div`
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+const Card = styled.div`
+  width: 100%;
+  max-width: 400px;
+  background: ${theme.cardBg};
+  border: 1px solid ${theme.border};
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
 `;
 
-const RegisterCard = styled.div`
-    width: 100%;
-    max-width: 400px;
-    background: #fff;
-    padding: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    text-align: center;
-
-    h1 {
-        margin-bottom: 1rem;
-        font-size: 1.8rem;
-        color: #333;
-    }
-
-    p {
-        margin-bottom: 2rem;
-        color: #666;
-        font-size: 1rem;
-    }
+const Title = styled.h1`
+  color: ${theme.text};
+  font-size: 1.75rem;
+  margin-bottom: 0.5rem;
 `;
+
+const Subtitle = styled.p`
+  color: ${theme.textMuted};
+  font-size: 0.95rem;
+  margin-bottom: 1.5rem;
+`;
+
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+`;
+
 const Input = styled.input`
-    width: 100%;
-    padding: 0.8rem;
-    margin-bottom: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 1rem;
-    box-sizing: border-box; /* Add this line */
-    &:focus {
-        border-color: #007bff;
-        outline: none;
-    }
+  padding: 0.75rem 1rem;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid ${theme.border};
+  border-radius: 8px;
+  color: ${theme.text};
+  font-size: 1rem;
+  &::placeholder {
+    color: ${theme.textMuted};
+  }
+  &:focus {
+    outline: none;
+    border-color: ${theme.accent};
+  }
+`;
+
+const ErrorMsg = styled.p`
+  color: ${theme.error};
+  font-size: 0.9rem;
+  margin: 0;
 `;
 
 const Button = styled.button`
-    width: 100%;
-    padding: 0.8rem;
-    background-color: #007bff;
-    color: #fff;
-    font-size: 1rem;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-    box-sizing: border-box; /* Add this line */
-    &:hover {
-        background-color: #0056b3;
-    }
+  padding: 0.75rem 1rem;
+  background: ${theme.accent};
+  color: ${theme.bg};
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  &:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
 `;
 
-const Divider = styled.hr`
-    border: 0;
-    height: 1px;
-    background: #ddd;
-    margin: 1.5rem 0;
+const Footer = styled.p`
+  margin-top: 1.5rem;
+  color: ${theme.textMuted};
+  font-size: 0.9rem;
+  a {
+    color: ${theme.accent};
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
 `;
 
-const SecondaryText = styled.p`
-    font-size: 0.9rem;
-    color: #666;
-
-    a {
-        color: #007bff;
-        text-decoration: none;
-    }
-
-    a:hover {
-        text-decoration: underline;
-    }
-`;
-
-export default Register;
+export default RegisterPage;

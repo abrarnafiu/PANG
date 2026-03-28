@@ -1,0 +1,8 @@
+flask
+PyJWT[crypto]
+yfinance
+pandas
+numpy
+scikit-learn
+python-dotenv
+gunicorn

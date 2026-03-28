@@ -1,29 +1,59 @@
-import HomePage from './pages/HomePage';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import './index.css'; 
-import Solutions from './pages/SolutionsPage';
-import GetStarted from './pages/GetStartedPage';
-import About from './pages/AboutPage';
-import Analysis from './pages/AnalysisPage';
-import Register from './pages/RegisterPage';
-import Login from './pages/LoginPage';
-import Protected from './components/Protected';
-import Forgot from './pages/ForgotPasswordPage';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider } from "./contexts/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import DashboardPage from "./pages/DashboardPage";
+import AnalysisPage from "./pages/AnalysisPage";
+import MonteCarloPage from "./pages/MonteCarloPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import "./index.css";
+
 const App: React.FC = () => {
   return (
     <Router>
-            <Routes>
-                <Route path="/" element={<HomePage />} /> 
-                <Route path="/solutions" element={<Solutions />} /> 
-                <Route path="/About" element={<About />} />
-                <Route path='/get-started' element={<GetStarted />} />
-                <Route path="/analysis" element={<Analysis />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/protected" element={<Protected />} />
-                <Route path="/forgot" element={<Forgot />} />
-            </Routes>
-        </Router>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute>
+                <DashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/analysis/:ticker"
+            element={
+              <ProtectedRoute>
+                <AnalysisPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/montecarlo/:ticker"
+            element={
+              <ProtectedRoute>
+                <MonteCarloPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/montecarlo"
+            element={
+              <ProtectedRoute>
+                <MonteCarloPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Routes>
+      </AuthProvider>
+    </Router>
   );
 };
 

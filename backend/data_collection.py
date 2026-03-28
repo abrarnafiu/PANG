@@ -15,7 +15,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 app = Flask(__name__)
 # Configurations
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'  # SQLite database
-app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'  # JWT secret key
+app.config['JWT_SECRET_KEY'] = 'DmbzGKMS1fZ7AvtRSVOlyGZT22kS0ODC66q1nD0W83RC0rUPW1L44+2phIEAmANPhOHInqZK1QwUJGSxDukVDg=='  # JWT secret key
 
 db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
